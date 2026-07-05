@@ -1,13 +1,14 @@
 import React from 'react';
 import Navbar from '../components/Navbar';
+import Camera from '../components/Camera';
 
 function Home() {
   return (
     <div className="app-container">
       <Navbar />
-      
-      <div className="coming-soon">
-        <p>📖 Reading helper coming soon...</p>
+      <Camera />
+      <div className="status-message">
+        📷 Place a word in the box above
       </div>
     </div>
   );

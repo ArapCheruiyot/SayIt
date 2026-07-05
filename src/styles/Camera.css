@@ -1,0 +1,167 @@
+/* ===== CAMERA WRAPPER ===== */
+.camera-wrapper {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #0f0f23;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 16px;
+  border: 3px solid #2a2a5a;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ===== STATUS OVERLAY ===== */
+.camera-status {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  width: 100%;
+  padding: 16px;
+  z-index: 2;
+}
+
+.camera-status p {
+  background: rgba(0, 0, 0, 0.75);
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 16px;
+  display: inline-block;
+  backdrop-filter: blur(4px);
+}
+
+/* Status Messages */
+.loading-message {
+  color: #fbbf24;
+}
+
+.ready-message {
+  color: #4ade80;
+  animation: pulse-text 2s ease-in-out infinite;
+}
+
+.error-message {
+  color: #f87171;
+}
+
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ===== ERROR CONTAINER ===== */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.retry-button {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.retry-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.retry-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===== FOCUS BOX (Phase 3) ===== */
+.focus-box {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70%;
+  height: 45%;
+  border: 3px dashed rgba(255, 215, 0, 0.5);
+  border-radius: 16px;
+  pointer-events: none;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.05);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.focus-box.active {
+  border-color: #4ade80;
+  border-style: solid;
+  box-shadow: 0 0 40px rgba(74, 222, 128, 0.2);
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.focus-box-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(2px);
+  transition: all 0.3s ease;
+}
+
+.focus-box.active .focus-box-label {
+  color: #4ade80;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* ===== WORD PREVIEW (Phase 4) ===== */
+.word-preview {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  padding: 10px 24px;
+  border-radius: 30px;
+  border: 2px solid #4ade80;
+  z-index: 3;
+  animation: slideUp 0.4s ease;
+}
+
+.word-text {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

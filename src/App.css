@@ -37,3 +37,12 @@ body {
   margin-top: 50px;
   font-size: 18px;
 }
+
+/* Add to App.css */
+.status-message {
+  color: #8888aa;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 14px;
+  min-height: 22px;
+}
