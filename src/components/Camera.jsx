@@ -13,8 +13,6 @@ function Camera() {
   const [isRetrying, setIsRetrying] = useState(false);
   const [detectedWord, setDetectedWord] = useState('');
   const [permissionState, setPermissionState] = useState('prompt');
-  
-  // ===== FOCUS BOX SIZE STATE =====
   const [boxSize, setBoxSize] = useState(70);
 
   // ===== START CAMERA =====
@@ -22,7 +20,6 @@ function Camera() {
     setIsRetrying(true);
     setError(null);
     
-    // Check permission first
     const perm = await checkCameraPermission();
     setPermissionState(perm);
     
@@ -38,6 +35,10 @@ function Camera() {
       setIsReady(true);
       setError(null);
       streamRef.current = result.stream;
+      // Force video to play
+      if (videoRef.current) {
+        videoRef.current.play().catch(err => console.log('Play error:', err));
+      }
     } else {
       setError(result.error || 'Failed to start camera');
       setIsReady(false);
@@ -46,9 +47,7 @@ function Camera() {
     setIsRetrying(false);
   };
 
-  // ===== RETRY CAMERA =====
   const handleRetry = () => {
-    // Reset video element
     if (videoRef.current) {
       stopCamera(videoRef.current);
       videoRef.current.srcObject = null;
@@ -56,15 +55,12 @@ function Camera() {
     initCamera();
   };
 
-  // ===== HANDLE BOX SIZE CHANGE =====
   const handleBoxResize = (e) => {
     const newSize = parseInt(e.target.value);
     setBoxSize(newSize);
   };
 
-  // ===== AUTO-START ON MOUNT =====
   useEffect(() => {
-    // Small delay to ensure DOM is ready
     const timer = setTimeout(() => {
       initCamera();
     }, 500);
@@ -76,7 +72,6 @@ function Camera() {
     };
   }, []);
 
-  // ===== HANDLE PAGE VISIBILITY =====
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -96,13 +91,11 @@ function Camera() {
     };
   }, []);
 
-  // ===== CALCULATE BOX SIZE =====
   const boxWidth = boxSize + '%';
   const boxHeight = (boxSize * 0.65) + '%';
 
   return (
     <>
-      {/* ===== CAMERA VIEW ===== */}
       <div className="camera-wrapper">
         {/* Video Feed */}
         <video
@@ -113,8 +106,8 @@ function Camera() {
           muted
         />
 
-        {/* Status Overlay */}
-        <div className="camera-status">
+        {/* Status Overlay — Top */}
+        <div className="camera-status-top">
           {error && (
             <div className="error-container">
               <p className="error-message">❌ {error}</p>
@@ -141,7 +134,7 @@ function Camera() {
           )}
         </div>
 
-        {/* Focus Box (Resizable) */}
+        {/* Focus Box */}
         <div 
           className={`focus-box ${detectedWord ? 'active' : ''}`}
           style={{
@@ -154,7 +147,7 @@ function Camera() {
           </span>
         </div>
 
-        {/* Detected Word Display */}
+        {/* Word Preview */}
         {detectedWord && (
           <div className="word-preview">
             <span className="word-text">{detectedWord}</span>
@@ -162,7 +155,7 @@ function Camera() {
         )}
       </div>
 
-      {/* ===== RESIZE CONTROLS (Below Camera) ===== */}
+      {/* Resize Controls */}
       <div className="resize-controls">
         <div className="resize-label">
           <span className="resize-icon">📐</span>

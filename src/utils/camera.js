@@ -3,14 +3,14 @@
  * All camera logic in one place
  */
 
-// Start the camera
+// ===== START CAMERA =====
 export const startCamera = async (videoElement) => {
   try {
     // Check if camera is supported
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      return { 
-        success: false, 
-        error: 'Camera not supported on this device or browser' 
+      return {
+        success: false,
+        error: 'Camera not supported on this device or browser'
       };
     }
 
@@ -28,7 +28,7 @@ export const startCamera = async (videoElement) => {
         const oldTracks = videoElement.srcObject.getTracks();
         oldTracks.forEach(track => track.stop());
       }
-      
+
       videoElement.srcObject = stream;
       await videoElement.play();
       return { success: true, stream };
@@ -36,7 +36,7 @@ export const startCamera = async (videoElement) => {
     return { success: false, error: 'Video element not found' };
   } catch (error) {
     console.error('Camera error:', error);
-    
+
     // Friendly error messages
     let errorMessage = 'Camera access denied';
     if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
@@ -48,12 +48,12 @@ export const startCamera = async (videoElement) => {
     } else if (error.name === 'OverconstrainedError') {
       errorMessage = 'Camera does not meet requirements';
     }
-    
+
     return { success: false, error: errorMessage };
   }
 };
 
-// Stop the camera
+// ===== STOP CAMERA =====
 export const stopCamera = (videoElement) => {
   if (videoElement && videoElement.srcObject) {
     const tracks = videoElement.srcObject.getTracks();
@@ -67,7 +67,7 @@ export const stopCamera = (videoElement) => {
   return false;
 };
 
-// Check if camera is available
+// ===== CHECK CAMERA PERMISSION =====
 export const checkCameraPermission = async () => {
   try {
     const result = await navigator.permissions.query({ name: 'camera' });

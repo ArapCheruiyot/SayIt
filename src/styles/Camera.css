@@ -16,81 +16,81 @@
   display: block;
 }
 
-/* ===== STATUS OVERLAY ===== */
-.camera-status {
+/* ===== STATUS OVERLAY — TOP (Outside Focus Box) ===== */
+.camera-status-top {
   position: absolute;
-  top: 50%;
+  top: 12px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   text-align: center;
-  pointer-events: none;
-  width: 100%;
-  padding: 16px;
-  z-index: 2;
-}
-
-.camera-status p {
-  background: rgba(0, 0, 0, 0.75);
-  padding: 10px 20px;
+  pointer-events: auto;
+  width: 90%;
+  max-width: 400px;
+  padding: 8px 16px;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
   border-radius: 12px;
-  font-weight: 500;
-  font-size: 16px;
-  display: inline-block;
-  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Status Messages */
-.loading-message {
+.camera-status-top p {
+  margin: 0;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.camera-status-top .loading-message {
   color: #fbbf24;
 }
 
-.ready-message {
+.camera-status-top .ready-message {
   color: #4ade80;
   animation: pulse-text 2s ease-in-out infinite;
 }
 
-.error-message {
+.camera-status-top .error-message {
   color: #f87171;
 }
 
-@keyframes pulse-text {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* ===== ERROR CONTAINER ===== */
-.error-container {
+.camera-status-top .error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   pointer-events: auto;
 }
 
-.retry-button {
+.camera-status-top .retry-button {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  padding: 8px 24px;
+  padding: 6px 20px;
   border-radius: 30px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(4px);
 }
 
-.retry-button:hover {
+.camera-status-top .retry-button:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.5);
 }
 
-.retry-button:disabled {
+.camera-status-top .retry-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* ===== FOCUS BOX (Phase 3) ===== */
+/* ===== PULSE ANIMATION ===== */
+@keyframes pulse-text {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* ===== FOCUS BOX ===== */
 .focus-box {
   position: absolute;
   top: 50%;
@@ -133,7 +133,7 @@
   background: rgba(0, 0, 0, 0.3);
 }
 
-/* ===== WORD PREVIEW (Phase 4) ===== */
+/* ===== WORD PREVIEW ===== */
 .word-preview {
   position: absolute;
   bottom: 20px;
@@ -170,7 +170,6 @@
    SLIDER — Full Camera Width with Graduation Marks
    ======================================== */
 
-/* Slider Container — same width as camera */
 .slider-container {
   width: 100%;
   padding: 12px 0 8px 0;
@@ -179,7 +178,6 @@
   margin-top: 4px;
 }
 
-/* Slider Track with graduation marks */
 .slider-track {
   position: relative;
   width: 100%;
@@ -188,7 +186,6 @@
   align-items: center;
 }
 
-/* Graduation marks — full width */
 .slider-graduations {
   position: absolute;
   top: 0;
@@ -203,7 +200,6 @@
   z-index: 0;
 }
 
-/* Individual tick marks */
 .slider-graduations span {
   display: block;
   width: 2px;
@@ -214,19 +210,16 @@
   margin-top: auto;
 }
 
-/* Every 5th tick — taller */
 .slider-graduations span:nth-child(5n+1) {
   height: 55%;
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* Every 10th tick — tallest and brightest */
 .slider-graduations span:nth-child(10n+1) {
   height: 70%;
   background: rgba(255, 255, 255, 0.4);
 }
 
-/* Slider input — full width */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -241,7 +234,6 @@ input[type="range"] {
   margin: 0;
 }
 
-/* Slider thumb */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -260,7 +252,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
   box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
 }
 
-/* Firefox support */
 input[type="range"]::-moz-range-thumb {
   width: 22px;
   height: 22px;
@@ -277,7 +268,6 @@ input[type="range"]::-moz-range-track {
   border-radius: 4px;
 }
 
-/* Labels under the slider */
 .slider-labels {
   display: flex;
   justify-content: space-between;
@@ -293,7 +283,6 @@ input[type="range"]::-moz-range-track {
   text-align: center;
 }
 
-/* Value display */
 .slider-value {
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
