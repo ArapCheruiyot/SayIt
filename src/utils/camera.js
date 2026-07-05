@@ -3,9 +3,30 @@
  * All camera logic in one place
  */
 
+// ===== RELEASE CAMERA =====
+export const releaseCamera = (videoElement) => {
+  if (videoElement) {
+    if (videoElement.srcObject) {
+      const tracks = videoElement.srcObject.getTracks();
+      tracks.forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      videoElement.srcObject = null;
+    }
+    // Reset the video element
+    videoElement.removeAttribute('src');
+    videoElement.load();
+  }
+  return true;
+};
+
 // ===== START CAMERA =====
 export const startCamera = async (videoElement) => {
   try {
+    // First, release any existing camera
+    releaseCamera(videoElement);
+
     // Check if camera is supported
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       return {
@@ -23,13 +44,13 @@ export const startCamera = async (videoElement) => {
     });
 
     if (videoElement) {
-      // Stop any existing stream first
-      if (videoElement.srcObject) {
-        const oldTracks = videoElement.srcObject.getTracks();
-        oldTracks.forEach(track => track.stop());
-      }
-
       videoElement.srcObject = stream;
+      // Wait for the video to be ready
+      await new Promise((resolve) => {
+        videoElement.onloadedmetadata = () => {
+          resolve();
+        };
+      });
       await videoElement.play();
       return { success: true, stream };
     }
@@ -44,7 +65,7 @@ export const startCamera = async (videoElement) => {
     } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
       errorMessage = 'No camera found on this device';
     } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
-      errorMessage = 'Camera is in use by another application';
+      errorMessage = 'Camera is in use by another application. Please close other apps using the camera.';
     } else if (error.name === 'OverconstrainedError') {
       errorMessage = 'Camera does not meet requirements';
     }
@@ -55,16 +76,7 @@ export const startCamera = async (videoElement) => {
 
 // ===== STOP CAMERA =====
 export const stopCamera = (videoElement) => {
-  if (videoElement && videoElement.srcObject) {
-    const tracks = videoElement.srcObject.getTracks();
-    tracks.forEach((track) => {
-      track.stop();
-      track.enabled = false;
-    });
-    videoElement.srcObject = null;
-    return true;
-  }
-  return false;
+  return releaseCamera(videoElement);
 };
 
 // ===== CHECK CAMERA PERMISSION =====

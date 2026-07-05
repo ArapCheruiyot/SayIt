@@ -38,19 +38,21 @@
   margin: 0;
   font-weight: 500;
   font-size: 14px;
+  color: #ffffff; /* White text for all status messages */
 }
 
+/* Individual status colors (all white) */
 .camera-status-top .loading-message {
-  color: #fbbf24;
+  color: #ffffff;
 }
 
 .camera-status-top .ready-message {
-  color: #4ade80;
+  color: #ffffff;
   animation: pulse-text 2s ease-in-out infinite;
 }
 
 .camera-status-top .error-message {
-  color: #f87171;
+  color: #ffffff;
 }
 
 .camera-status-top .error-container {
@@ -63,7 +65,7 @@
 
 .camera-status-top .retry-button {
   background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  color: #ffffff;
   border: 2px solid rgba(255, 255, 255, 0.3);
   padding: 6px 20px;
   border-radius: 30px;
@@ -149,7 +151,7 @@
 }
 
 .word-text {
-  color: #fff;
+  color: #ffffff;
   font-size: 24px;
   font-weight: 600;
   letter-spacing: 1px;
@@ -328,4 +330,9 @@ input[type="range"]::-moz-range-track {
   .slider-value {
     font-size: 10px;
   }
+}
+
+/* ===== FORCE READY MESSAGE TO BE WHITE ===== */
+.camera-status-top .ready-message {
+  color: #ffffff !important;
 }

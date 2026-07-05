@@ -1,13 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { startCamera, stopCamera, checkCameraPermission } from '../utils/camera';
+ import React, { useRef, useState, useEffect } from 'react';
+import { startCamera, stopCamera, checkCameraPermission, releaseCamera } from '../utils/camera';
 import '../styles/Camera.css';
 
 function Camera() {
-  // ===== REFS =====
   const videoRef = useRef(null);
   const streamRef = useRef(null);
 
-  // ===== STATE =====
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -15,43 +13,42 @@ function Camera() {
   const [permissionState, setPermissionState] = useState('prompt');
   const [boxSize, setBoxSize] = useState(70);
 
-  // ===== START CAMERA =====
   const initCamera = async () => {
     setIsRetrying(true);
     setError(null);
-    
+
+    if (videoRef.current) {
+      releaseCamera(videoRef.current);
+    }
+
     const perm = await checkCameraPermission();
     setPermissionState(perm);
-    
+
     if (perm === 'denied') {
       setError('Camera access is blocked. Please enable it in your browser settings.');
       setIsRetrying(false);
       return;
     }
-    
+
     const result = await startCamera(videoRef.current);
-    
+
     if (result.success) {
       setIsReady(true);
       setError(null);
       streamRef.current = result.stream;
-      // Force video to play
-      if (videoRef.current) {
-        videoRef.current.play().catch(err => console.log('Play error:', err));
-      }
     } else {
       setError(result.error || 'Failed to start camera');
       setIsReady(false);
     }
-    
+
     setIsRetrying(false);
   };
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     if (videoRef.current) {
-      stopCamera(videoRef.current);
-      videoRef.current.srcObject = null;
+      releaseCamera(videoRef.current);
     }
+    await new Promise(resolve => setTimeout(resolve, 500));
     initCamera();
   };
 
@@ -67,7 +64,9 @@ function Camera() {
 
     return () => {
       clearTimeout(timer);
-      stopCamera(videoRef.current);
+      if (videoRef.current) {
+        releaseCamera(videoRef.current);
+      }
       streamRef.current = null;
     };
   }, []);
@@ -96,8 +95,15 @@ function Camera() {
 
   return (
     <>
+      {/* ===== STATUS MESSAGE — OUTSIDE CAMERA ===== */}
+      <div className="camera-status-container">
+        {isReady && !error && (
+          <p className="ready-message">✅ Ready! Place a word in the box</p>
+        )}
+      </div>
+
+      {/* ===== CAMERA VIEW ===== */}
       <div className="camera-wrapper">
-        {/* Video Feed */}
         <video
           ref={videoRef}
           className="camera-video"
@@ -106,12 +112,12 @@ function Camera() {
           muted
         />
 
-        {/* Status Overlay — Top */}
-        <div className="camera-status-top">
+        {/* ===== ERROR / LOADING OVERLAY (Inside Camera) ===== */}
+        <div className="camera-status-overlay">
           {error && (
             <div className="error-container">
               <p className="error-message">❌ {error}</p>
-              <button 
+              <button
                 className="retry-button"
                 onClick={handleRetry}
                 disabled={isRetrying}
@@ -120,34 +126,37 @@ function Camera() {
               </button>
             </div>
           )}
-          
+
           {!isReady && !error && !isRetrying && (
             <p className="loading-message">📷 Starting camera...</p>
           )}
-          
+
           {isRetrying && !error && (
             <p className="loading-message">⏳ Please wait...</p>
           )}
-          
-          {isReady && (
-            <p className="ready-message">✅ Ready! Place a word in the box</p>
-          )}
         </div>
 
-        {/* Focus Box */}
-        <div 
+        {/* ===== FOCUS BOX ===== */}
+        <div
           className={`focus-box ${detectedWord ? 'active' : ''}`}
           style={{
             width: boxWidth,
             height: boxHeight,
           }}
         >
-          <span className="focus-box-label">
-            {detectedWord || '📖 Place word here'}
-          </span>
+          {!isReady && (
+            <span className="focus-box-label">
+              📖 Place word here
+            </span>
+          )}
+
+          {isReady && detectedWord && (
+            <span className="focus-box-label">
+              {detectedWord}
+            </span>
+          )}
         </div>
 
-        {/* Word Preview */}
         {detectedWord && (
           <div className="word-preview">
             <span className="word-text">{detectedWord}</span>
@@ -155,7 +164,7 @@ function Camera() {
         )}
       </div>
 
-      {/* Resize Controls */}
+      {/* ===== RESIZE CONTROLS ===== */}
       <div className="resize-controls">
         <div className="resize-label">
           <span className="resize-icon">📐</span>
