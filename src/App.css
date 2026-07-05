@@ -1,0 +1,39 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #1a1a2e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 16px;
+}
+
+.App {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.app-container {
+  max-width: 480px;
+  width: 100%;
+  background: #16213e;
+  border-radius: 32px;
+  padding: 24px 20px 30px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  min-height: 700px;
+}
+
+.coming-soon {
+  color: #555577;
+  text-align: center;
+  margin-top: 50px;
+  font-size: 18px;
+}

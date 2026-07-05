@@ -1,0 +1,18 @@
+.navbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #2a2a5a;
+  margin-bottom: 30px;
+}
+
+.navbar h1 {
+  font-size: 32px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1px;
+}
