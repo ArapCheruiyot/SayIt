@@ -38,10 +38,9 @@
   margin: 0;
   font-weight: 500;
   font-size: 14px;
-  color: #ffffff; /* White text for all status messages */
+  color: #ffffff;
 }
 
-/* Individual status colors (all white) */
 .camera-status-top .loading-message {
   color: #ffffff;
 }
@@ -335,4 +334,62 @@ input[type="range"]::-moz-range-track {
 /* ===== FORCE READY MESSAGE TO BE WHITE ===== */
 .camera-status-top .ready-message {
   color: #ffffff !important;
+}
+
+/* ========================================
+   SAY IT BUTTON
+   ======================================== */
+
+.say-it-container {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 8px 0;
+}
+
+.say-it-button {
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  padding: 16px 48px;
+  border: none;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.4);
+  letter-spacing: 1px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.say-it-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(74, 222, 128, 0.6);
+}
+
+.say-it-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.say-it-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.say-it-button .button-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.say-it-button .spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
