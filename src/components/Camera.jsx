@@ -1,12 +1,13 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { startCamera, checkCameraPermission, releaseCamera } from '../utils/camera';
-import Tesseract from 'tesseract.js';
+import { detectWord, isValidDetection } from '../utils/detection';
 import '../styles/Camera.css';
 
 function Camera() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const canvasRef = useRef(document.createElement('canvas'));
+  const detectionIntervalRef = useRef(null);
+  const initTimeoutRef = useRef(null);
 
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState(null);
@@ -14,13 +15,71 @@ function Camera() {
   const [detectedWord, setDetectedWord] = useState('');
   const [boxSize, setBoxSize] = useState(70);
   const [isDetecting, setIsDetecting] = useState(false);
+  const [confidence, setConfidence] = useState(0);
+  const [cameraAttempts, setCameraAttempts] = useState(0);
 
-  const initCamera = async () => {
+  // ===== STOP AUTO DETECTION =====
+  const stopAutoDetection = useCallback(() => {
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
+  }, []);
+
+  // ===== CAPTURE & DETECT (USING NEW DETECTION MODULE) =====
+  const captureAndDetect = useCallback(async () => {
+    if (!videoRef.current || !isReady || isDetecting) return;
+
+    setIsDetecting(true);
+    setDetectedWord('');
+    setConfidence(0);
+
+    try {
+      const video = videoRef.current;
+      
+      // Use the detection module
+      const result = await detectWord(video, boxSize);
+
+      if (result.word && isValidDetection(result)) {
+        setDetectedWord(result.word);
+        setConfidence(result.confidence);
+      } else if (result.error) {
+        setDetectedWord(result.error);
+        setConfidence(0);
+      } else {
+        setDetectedWord('No word detected');
+        setConfidence(0);
+      }
+    } catch (error) {
+      console.error('Detection error:', error);
+      setDetectedWord('Error reading');
+      setConfidence(0);
+    } finally {
+      setIsDetecting(false);
+    }
+  }, [boxSize, isReady, isDetecting]);
+
+  // ===== START AUTO DETECTION =====
+  const startAutoDetection = useCallback(() => {
+    stopAutoDetection();
+    detectionIntervalRef.current = setInterval(() => {
+      captureAndDetect();
+    }, 2000);
+  }, [captureAndDetect, stopAutoDetection]);
+
+  // ===== INIT CAMERA =====
+  const initCamera = useCallback(async () => {
+    if (initTimeoutRef.current) {
+      clearTimeout(initTimeoutRef.current);
+      initTimeoutRef.current = null;
+    }
+
     setIsRetrying(true);
     setError(null);
 
     if (videoRef.current) {
       releaseCamera(videoRef.current);
+      videoRef.current.srcObject = null;
     }
 
     const perm = await checkCameraPermission();
@@ -31,105 +90,114 @@ function Camera() {
       return;
     }
 
-    const result = await startCamera(videoRef.current);
+    try {
+      const result = await Promise.race([
+        startCamera(videoRef.current),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Camera timeout after 15 seconds')), 15000)
+        )
+      ]);
 
-    if (result.success) {
-      setIsReady(true);
-      setError(null);
-      streamRef.current = result.stream;
-    } else {
-      setError(result.error || 'Failed to start camera');
+      if (result.success) {
+        setIsReady(true);
+        setError(null);
+        streamRef.current = result.stream;
+        setCameraAttempts(0);
+        setTimeout(() => startAutoDetection(), 1000);
+      } else {
+        setError(result.error || 'Failed to start camera');
+        setIsReady(false);
+        setCameraAttempts(prev => prev + 1);
+        
+        if (cameraAttempts < 2) {
+          console.log(`Auto-retry attempt ${cameraAttempts + 1}...`);
+          setTimeout(() => initCamera(), 3000);
+        }
+      }
+    } catch (error) {
+      console.error('Camera init error:', error);
+      setError('Camera timed out. Please refresh and try again.');
       setIsReady(false);
+      setCameraAttempts(prev => prev + 1);
     }
 
     setIsRetrying(false);
-  };
+  }, [startAutoDetection, cameraAttempts]);
 
-  const handleRetry = async () => {
+  // ===== RETRY =====
+  const handleRetry = useCallback(async () => {
+    stopAutoDetection();
     if (videoRef.current) {
       releaseCamera(videoRef.current);
+      videoRef.current.srcObject = null;
     }
-    await new Promise(resolve => setTimeout(resolve, 500));
+    streamRef.current = null;
+    setIsReady(false);
+    setError(null);
+    setCameraAttempts(0);
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
     initCamera();
-  };
+  }, [initCamera, stopAutoDetection]);
 
-  const handleBoxResize = (e) => {
+  // ===== BOX RESIZE =====
+  const handleBoxResize = useCallback((e) => {
     const newSize = parseInt(e.target.value);
     setBoxSize(newSize);
-  };
+  }, []);
 
-  // ===== DETECTION LOGIC =====
-  const captureAndDetect = async () => {
-    if (!videoRef.current || !isReady || isDetecting) return;
+  // ===== HANDLE SAY IT =====
+  const handleSayIt = useCallback(() => {
+    captureAndDetect();
+  }, [captureAndDetect]);
 
-    setIsDetecting(true);
-    setDetectedWord('');
-
-    try {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const videoWidth = video.videoWidth || 640;
-      const videoHeight = video.videoHeight || 480;
-
-      canvas.width = videoWidth;
-      canvas.height = videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-
-      const boxWidthPx = videoWidth * (boxSize / 100);
-      const boxHeightPx = videoHeight * (boxSize / 100 * 0.65);
-      const x = (videoWidth - boxWidthPx) / 2;
-      const y = (videoHeight - boxHeightPx) / 2;
-
-      const croppedCanvas = document.createElement('canvas');
-      croppedCanvas.width = boxWidthPx;
-      croppedCanvas.height = boxHeightPx;
-      const croppedCtx = croppedCanvas.getContext('2d');
-      croppedCtx.drawImage(canvas, x, y, boxWidthPx, boxHeightPx, 0, 0, boxWidthPx, boxHeightPx);
-
-      const result = await Tesseract.recognize(croppedCanvas, 'eng');
-      const text = result.data.text.trim();
-
-      if (text) {
-        setDetectedWord(text);
-      } else {
-        setDetectedWord('❌ No text detected');
-      }
-    } catch (error) {
-      console.error('OCR error:', error);
-      setDetectedWord('❌ Error reading text');
-    } finally {
-      setIsDetecting(false);
+  // ===== TOGGLE AUTO DETECTION =====
+  const toggleAutoDetection = useCallback(() => {
+    if (detectionIntervalRef.current) {
+      stopAutoDetection();
+    } else {
+      startAutoDetection();
     }
-  };
+  }, [startAutoDetection, stopAutoDetection]);
 
-  // ===== EFFECTS =====
+  // ===== EFFECT: INITIALIZE =====
   useEffect(() => {
     const timer = setTimeout(() => {
       initCamera();
     }, 500);
 
-    // Store ref in a variable for cleanup
     const videoElement = videoRef.current;
 
     return () => {
       clearTimeout(timer);
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+      }
+      stopAutoDetection();
       if (videoElement) {
         releaseCamera(videoElement);
+        videoElement.srcObject = null;
       }
       streamRef.current = null;
     };
-  }, []); // Empty dependency array — runs once on mount
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // ===== EFFECT: VISIBILITY CHANGE =====
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
+        stopAutoDetection();
         if (videoRef.current && videoRef.current.srcObject) {
           videoRef.current.pause();
         }
       } else {
         if (videoRef.current && videoRef.current.srcObject) {
           videoRef.current.play().catch(() => {});
+          if (isReady) {
+            startAutoDetection();
+          }
+        } else if (!isReady && !error && !isRetrying) {
+          initCamera();
         }
       }
     };
@@ -138,16 +206,24 @@ function Camera() {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [startAutoDetection, stopAutoDetection, initCamera, isReady, error, isRetrying]);
 
+  // ===== RENDER =====
   const boxWidth = boxSize + '%';
   const boxHeight = (boxSize * 0.65) + '%';
+
+  const isWordDetected = detectedWord && 
+    detectedWord !== 'No word detected' && 
+    detectedWord !== 'Error reading';
 
   return (
     <>
       <div className="camera-status-container">
         {isReady && !error && (
           <p className="ready-message">✅ Ready! Place a word in the box</p>
+        )}
+        {cameraAttempts > 0 && !error && (
+          <p className="loading-message">⏳ Attempt {cameraAttempts + 1} of 3...</p>
         )}
       </div>
 
@@ -160,7 +236,7 @@ function Camera() {
           muted
         />
 
-        <div className="camera-status-overlay">
+        <div className="camera-status-top">
           {error && (
             <div className="error-container">
               <p className="error-message">❌ {error}</p>
@@ -184,23 +260,22 @@ function Camera() {
         </div>
 
         <div
-          className={`focus-box ${detectedWord && !detectedWord.includes('No') && !detectedWord.includes('Error') ? 'active' : ''}`}
+          className={`focus-box ${isWordDetected ? 'active' : ''}`}
           style={{ width: boxWidth, height: boxHeight }}
         >
-          {!isReady && (
-            <span className="focus-box-label">📖 Place word here</span>
-          )}
-          {isReady && detectedWord && !detectedWord.includes('No') && !detectedWord.includes('Error') && (
-            <span className="focus-box-label">{detectedWord}</span>
-          )}
+          <span className="focus-box-label">
+            {isWordDetected ? detectedWord : '📖 Place word here'}
+          </span>
         </div>
-
-        {detectedWord && (
-          <div className="word-preview">
-            <span className="word-text">{detectedWord}</span>
-          </div>
-        )}
       </div>
+
+      {isWordDetected && confidence > 0 && (
+        <div className="confidence-display">
+          <span className="confidence-text">
+            Confidence: {confidence}%
+          </span>
+        </div>
+      )}
 
       <div className="resize-controls">
         <div className="resize-label">
@@ -208,28 +283,48 @@ function Camera() {
           <span className="resize-text">Adjust focus box size</span>
         </div>
         <div className="slider-container">
-          <span className="size-indicator small">Small</span>
-          <input
-            type="range"
-            min="30"
-            max="90"
-            value={boxSize}
-            onChange={handleBoxResize}
-            className="size-slider"
-            aria-label="Adjust focus box size"
-          />
-          <span className="size-indicator large">Large</span>
+          <div className="slider-track">
+            <div className="slider-graduations">
+              {[...Array(21)].map((_, i) => (
+                <span key={i} />
+              ))}
+            </div>
+            <input
+              type="range"
+              min="30"
+              max="90"
+              value={boxSize}
+              onChange={handleBoxResize}
+              className="size-slider"
+              aria-label="Adjust focus box size"
+            />
+          </div>
+          <div className="slider-labels">
+            <span>Small</span>
+            <span>Large</span>
+          </div>
+          <div className="slider-value">
+            <strong>{boxSize}%</strong>
+          </div>
         </div>
-        <div className="size-value">{boxSize}%</div>
       </div>
 
       <div className="say-it-container">
         <button
           className="say-it-button"
-          onClick={captureAndDetect}
+          onClick={handleSayIt}
           disabled={!isReady || isDetecting}
         >
-          {isDetecting ? '⏳ Thinking...' : '📸 SAY IT!'}
+          {isDetecting ? '⏳ Thinking...' : '🔊 SAY IT!'}
+        </button>
+      </div>
+
+      <div className="mode-toggle">
+        <button 
+          className={`mode-button ${detectionIntervalRef.current ? 'active' : ''}`}
+          onClick={toggleAutoDetection}
+        >
+          {detectionIntervalRef.current ? '⏸️ Auto-Detect ON' : '▶️ Auto-Detect OFF'}
         </button>
       </div>
     </>

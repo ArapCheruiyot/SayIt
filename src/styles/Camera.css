@@ -1,4 +1,6 @@
-/* ===== CAMERA WRAPPER ===== */
+/* ========================================
+   CAMERA WRAPPER
+   ======================================== */
 .camera-wrapper {
   position: relative;
   border-radius: 20px;
@@ -16,7 +18,9 @@
   display: block;
 }
 
-/* ===== STATUS OVERLAY — TOP (Outside Focus Box) ===== */
+/* ========================================
+   STATUS OVERLAY — TOP (Outside Focus Box)
+   ======================================== */
 .camera-status-top {
   position: absolute;
   top: 12px;
@@ -28,7 +32,7 @@
   max-width: 400px;
   padding: 8px 16px;
   z-index: 10;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -42,16 +46,16 @@
 }
 
 .camera-status-top .loading-message {
-  color: #ffffff;
+  color: #fbbf24;
 }
 
 .camera-status-top .ready-message {
-  color: #ffffff;
+  color: #4ade80 !important;
   animation: pulse-text 2s ease-in-out infinite;
 }
 
 .camera-status-top .error-message {
-  color: #ffffff;
+  color: #f87171;
 }
 
 .camera-status-top .error-container {
@@ -85,13 +89,33 @@
   cursor: not-allowed;
 }
 
-/* ===== PULSE ANIMATION ===== */
+/* ========================================
+   STATUS CONTAINER (Below Camera)
+   ======================================== */
+.camera-status-container {
+  text-align: center;
+  margin-bottom: 10px;
+  min-height: 30px;
+}
+
+.camera-status-container .ready-message {
+  color: #4ade80;
+  font-size: 15px;
+  font-weight: 500;
+  animation: pulse-text 2s ease-in-out infinite;
+}
+
+/* ========================================
+   PULSE ANIMATION
+   ======================================== */
 @keyframes pulse-text {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
 
-/* ===== FOCUS BOX ===== */
+/* ========================================
+   FOCUS BOX
+   ======================================== */
 .focus-box {
   position: absolute;
   top: 50%;
@@ -113,8 +137,8 @@
 .focus-box.active {
   border-color: #4ade80;
   border-style: solid;
-  box-shadow: 0 0 40px rgba(74, 222, 128, 0.2);
-  background: rgba(74, 222, 128, 0.05);
+  box-shadow: 0 0 40px rgba(74, 222, 128, 0.25);
+  background: rgba(74, 222, 128, 0.06);
 }
 
 .focus-box-label {
@@ -127,20 +151,27 @@
   border-radius: 20px;
   backdrop-filter: blur(2px);
   transition: all 0.3s ease;
+  text-align: center;
+  max-width: 90%;
+  word-break: break-word;
 }
 
 .focus-box.active .focus-box-label {
   color: #4ade80;
   background: rgba(0, 0, 0, 0.3);
+  font-weight: 600;
+  font-size: 18px;
 }
 
-/* ===== WORD PREVIEW ===== */
+/* ========================================
+   WORD PREVIEW (Bottom of Camera)
+   ======================================== */
 .word-preview {
   position: absolute;
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(8px);
   padding: 10px 24px;
   border-radius: 30px;
@@ -168,9 +199,55 @@
 }
 
 /* ========================================
-   SLIDER — Full Camera Width with Graduation Marks
+   CONFIDENCE DISPLAY
    ======================================== */
+.confidence-display {
+  text-align: center;
+  margin: 6px 0 10px;
+}
 
+.confidence-text {
+  color: #8888aa;
+  font-size: 13px;
+  font-weight: 500;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px 16px;
+  border-radius: 20px;
+}
+
+/* ========================================
+   RESIZE CONTROLS (Below Camera)
+   ======================================== */
+.resize-controls {
+  background: rgba(22, 33, 62, 0.95);
+  border-radius: 16px;
+  padding: 14px 18px 18px;
+  margin-top: 0;
+  margin-bottom: 12px;
+  border: 1px solid #2a2a5a;
+  width: 100%;
+}
+
+.resize-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  justify-content: center;
+}
+
+.resize-icon {
+  font-size: 16px;
+}
+
+.resize-text {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+/* ===== SLIDER WITH GRADUATIONS ===== */
 .slider-container {
   width: 100%;
   padding: 12px 0 8px 0;
@@ -221,6 +298,7 @@
   background: rgba(255, 255, 255, 0.4);
 }
 
+/* Slider Input */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
@@ -269,6 +347,7 @@ input[type="range"]::-moz-range-track {
   border-radius: 4px;
 }
 
+/* Slider Labels */
 .slider-labels {
   display: flex;
   justify-content: space-between;
@@ -284,6 +363,21 @@ input[type="range"]::-moz-range-track {
   text-align: center;
 }
 
+.size-indicator {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 500;
+  min-width: 40px;
+}
+
+.size-indicator.small {
+  text-align: right;
+}
+
+.size-indicator.large {
+  text-align: left;
+}
+
 .slider-value {
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
@@ -296,6 +390,102 @@ input[type="range"]::-moz-range-track {
 .slider-value strong {
   color: #4ade80;
   font-weight: 600;
+}
+
+.size-value {
+  text-align: center;
+  color: #ffd200;
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* ========================================
+   SAY IT BUTTON
+   ======================================== */
+.say-it-container {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0 8px 0;
+}
+
+.say-it-button {
+  background: linear-gradient(135deg, #f7971e, #ffd200);
+  color: #1a1a2e;
+  font-size: 24px;
+  font-weight: 700;
+  padding: 16px 48px;
+  border: none;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+  letter-spacing: 1px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.say-it-button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 30px rgba(255, 215, 0, 0.6);
+}
+
+.say-it-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.say-it-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.say-it-button .button-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.say-it-button .spinner {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ========================================
+   MODE TOGGLE (Auto-Detect On/Off)
+   ======================================== */
+.mode-toggle {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.mode-button {
+  background: rgba(255, 255, 255, 0.05);
+  color: #8888aa;
+  border: 1px solid #2a2a5a;
+  padding: 8px 20px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mode-button.active {
+  border-color: #fbbf24;
+  color: #fbbf24;
+}
+
+.mode-button:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ========================================
@@ -329,67 +519,25 @@ input[type="range"]::-moz-range-track {
   .slider-value {
     font-size: 10px;
   }
-}
-
-/* ===== FORCE READY MESSAGE TO BE WHITE ===== */
-.camera-status-top .ready-message {
-  color: #ffffff !important;
+  .say-it-button {
+    font-size: 20px;
+    padding: 14px 32px;
+  }
+  .focus-box.active .focus-box-label {
+    font-size: 15px;
+  }
+  .word-text {
+    font-size: 20px;
+  }
 }
 
 /* ========================================
-   SAY IT BUTTON
+   EXTRA: STATUS MESSAGE (Below Everything)
    ======================================== */
-
-.say-it-container {
-  display: flex;
-  justify-content: center;
-  padding: 16px 0 8px 0;
-}
-
-.say-it-button {
-  background: linear-gradient(135deg, #4ade80, #22c55e);
-  color: #ffffff;
-  font-size: 24px;
-  font-weight: 700;
-  padding: 16px 48px;
-  border: none;
-  border-radius: 60px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.4);
-  letter-spacing: 1px;
-  width: 100%;
-  max-width: 300px;
-}
-
-.say-it-button:hover:not(:disabled) {
-  transform: scale(1.05);
-  box-shadow: 0 6px 30px rgba(74, 222, 128, 0.6);
-}
-
-.say-it-button:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.say-it-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.say-it-button .button-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.say-it-button .spinner {
-  display: inline-block;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.status-message {
+  color: #8888aa;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 14px;
+  min-height: 22px;
 }
